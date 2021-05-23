@@ -10,16 +10,6 @@ This script is under active development and suggestions/edits are GREATLY apprec
 
 --------------------------------------------------------------------------------------------------
 
-## Requirements
-The following are requirements for this script:
-* cbpro
-* schedule
-* json
-* time
-
-These can be installed individually using Pip or by running: ```pip install -r requirements.txt```
-
-
 ## How to generate a Coinbase Pro API key:
 
 1) Follow one of the following two links depending on your intention. 
