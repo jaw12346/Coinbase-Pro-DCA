@@ -1,0 +1,2 @@
+cbpro==1.1.4
+schedule==1.1.0

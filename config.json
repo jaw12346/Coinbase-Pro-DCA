@@ -1,0 +1,17 @@
+{
+  "api-key": "",
+  "api-secret": "",
+  "api-passphrase": "",
+  "frequency-type": "",
+  "frequency": ,
+  "purchase": [
+    {
+      "trading-pair" : "",
+      "amount" : 
+    },
+    {
+      "trading-pair" : "",
+      "amount" : 
+    }
+  ]
+}
