@@ -87,18 +87,19 @@ def validate_config(key, secret, frequency_type, frequency):
 
 def validate_order_request(client, requests):
     markets = generate_markets(client)
-    # print(markets)
     valid_orders = list()
     for request in requests:
         trading_pair = request[0]
         if trading_pair in markets:  # Valid trading pair
-
             print(str(trading_pair) + " " + str(markets[trading_pair]))
-
-            min_order = markets[trading_pair]['min_market']
-            max_order = markets[trading_pair]['max_market']
-            enabled = not markets[trading_pair]['enabled']
+            min_order = markets[trading_pair]['min_market']  # Minimum allowable market-order
+            max_order = markets[trading_pair]['max_market']  # Maximum allowable market-order
+            enabled = not markets[trading_pair]['enabled']  # API returns if trading is disabled. Disabled check -> Enabled check
             order_size = request[1]
+            if not enabled:
+                print(f"Order of {trading_pair} cannot be processed because Coinbase Pro has disabled market-orders. "
+                      f"This transaction will be ignored!")
+                continue
             if order_size > max_order:
                 print(f"Order of {trading_pair} cannot be processed because Coinbase Pro's maximum market-order size is"
                       f" {max_order}. This transaction will be ignored!")
@@ -106,10 +107,6 @@ def validate_order_request(client, requests):
             if order_size < min_order:
                 print(f"Order of {trading_pair} cannot be processed because Coinbase Pro's minimum market-order size is"
                       f" {min_order}. This transaction will be ignored!")
-                continue
-            if not enabled:
-                print(f"Order of {trading_pair} cannot be processed because Coinbase Pro has disabled market-orders. "
-                      f"This transaction will be ignored!")
                 continue
             valid_orders.append(request)  # Valid order request
         else:  # Invalid trading-pair
@@ -154,8 +151,8 @@ if __name__ == '__main__':
     key = config['api-key']
     secret = config['api-secret']
     passphrase = config['api-passphrase']
-    frequency_type = config['frequency-type'].lower()
     frequency = config['frequency']
+    frequency_type = str(config['frequency-type'].lower())
     if type(frequency) == str:
         frequency = frequency.lower()
     raw_orders = config['purchase']
@@ -173,7 +170,15 @@ if __name__ == '__main__':
     raw_accounts = auth_client.get_accounts()
     accounts = generate_accounts(raw_accounts)
 
-    # schedule.every().monday.at("19:34").do(place_order, auth_client=auth_client, coin='BTC-USD')
-    schedule.every(5).seconds.do(DCA, public_client=public_client, auth_client=auth_client, raw_orders=requested_orders)
+    generic_types = {'seconds', 'minutes', 'hours', 'days', 'weeks'}
+    if frequency_type in generic_types:
+        req = getattr(schedule.every(frequency), frequency_type)
+        req.do(DCA, public_client=public_client, auth_client=auth_client,
+                                                    raw_orders=requested_orders)
+    elif frequency_type == 'day':
+        req = getattr(schedule.every(1), frequency)
+        req.do(DCA, public_client=public_client, auth_client=auth_client,
+                                      raw_orders=requested_orders)
+
     while True:
         schedule.run_pending()
