@@ -32,7 +32,7 @@ This script is under active development and suggestions/edits are GREATLY apprec
 Note: Configuration file must follow valid JSON standards in order to be read properly by the script. It is **NOT** recommended to validate the JSON online with your API information as it is sensitive financial informaiton that should **NOT** be shared.
 
 1) Open "example-config.json" and examine the provided example.
-2) Rename the example file or create a new JSON file "config.json". This is the active configuration file called by the script.
+2) Open "config.json". This is the active configuration file called by the script.
 3) Copy your API Public Key into "api-key".
 4) Copy your API Secret Key into "api-secret".
 5) Copy your API Passphrase into "api-passphrase".
