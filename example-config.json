@@ -1,27 +1,4 @@
-{ //Example format
-    "api-key" : "API KEY",
-    "api-secret" : "API Secret",
-    "api-passphrase" : "API Passcode",
-    "frequency-type" : "seconds" / "minutes" / "hours" / "days" / "day" / "weeks",
-                //Enter one of the following exactly as written
-                //Day refers to named days in a week
-    "frequency" : 5 #seconds / 13 #minutes / 1 #hours / 4 #days / "tuesday" #day / 3 #weeks,
-                //Enter numerical values for 'seconds', 'minutes', 'hours', 'days', 'weeks'
-                //Enter a DAY NAME in quotes for "day" ("frequency" : "tuesday")
-                //Do not include hashtag comment in entered value
-  "purchase": [
-    {
-      "trading-pair" : "BTc-USD",
-      "amount" : 16.67
-    },
-    {
-      "trading-pair" : "BTC-USD",
-      "amount" : 20
-    }
-  ]
-}
-
-{ //Example JSON -- This configuration file will order $16.67 of BTC and $20 of BTC every 5 seconds
+{
   "api-key": "API KEY",
   "api-secret": "API Secret",
   "api-passphrase": "API Passcode",
