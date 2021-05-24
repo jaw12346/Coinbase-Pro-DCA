@@ -2,12 +2,13 @@
   "api-key": "",
   "api-secret": "",
   "api-passphrase": "",
+  "api-type": "",
   "frequency-type": "",
   "frequency": ,
   "purchase": [
     {
       "trading-pair" : "",
-      "amount" : 
+      "amount" :
     }
   ]
 }

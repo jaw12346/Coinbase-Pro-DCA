@@ -78,7 +78,7 @@ def place_order(auth_client, order, writer):  # Orders are passed in individuall
             return True
 
 
-def validate_config(key, secret, frequency_type, frequency):  # Ensure the configuration JSON is formatted correctly
+def validate_config(key, secret, frequency_type, frequency, api_type):  # Ensure the configuration JSON is formatted correctly
     if type(key) != str:
         print("API Key is not a string. Edit the configuration file and ensure api-key is formatted "
               "correctly.\nEnding loop.")
@@ -106,6 +106,10 @@ def validate_config(key, secret, frequency_type, frequency):  # Ensure the confi
             f"'frequency-type' / 'frequency' mismatch. Please ensure numerical-type frequencies {numerical_frequencies}"
             f"are not in quotations. Please check your spelling and verify types against the example config file."
             f"\nEnding loop.")
+        exit(-1)
+
+    if api_type != "sandbox" and api_type != "production":
+        print(f"'api-type' {api_type} is invalid. The API type must be 'sandbox' or 'production'.")
         exit(-1)
 
 
@@ -167,8 +171,9 @@ def DCA(public_client, auth_client, raw_orders, writer, file):  # Main driver fu
 if __name__ == '__main__':
     public_client = cbpro.PublicClient()
 
-    with open('config.json') as config_file:
+    with open('config-personal.json') as config_file:
         config = json.load(config_file)
+    api_type = config['api-type'].lower()
     key = config['api-key']
     secret = config['api-secret']
     passphrase = config['api-passphrase']
@@ -177,6 +182,7 @@ if __name__ == '__main__':
     if type(frequency) == str:
         frequency = frequency.lower()
     raw_orders = config['purchase']
+    validate_config(key, secret, frequency_type, frequency, api_type)
 
     requested_orders = list()
     print("Order requests:\n--------------------")
@@ -199,9 +205,11 @@ if __name__ == '__main__':
         writer.writerow(headers)  # Write the column headers
         log_file.flush()
 
-    auth_client = cbpro.AuthenticatedClient(key, secret, passphrase,
-                                            api_url="https://api-public.sandbox.pro.coinbase.com")  # Sandbox/testing API
-    # auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)  # Live-market API
+    if api_type == "sandbox":
+        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase,
+                                                api_url="https://api-public.sandbox.pro.coinbase.com")  # Sandbox/testing API
+    elif api_type == "production":
+        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)  # Live-market API
 
     raw_accounts = auth_client.get_accounts()
     accounts = generate_accounts(raw_accounts)

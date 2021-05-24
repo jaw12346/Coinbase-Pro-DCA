@@ -1,7 +1,8 @@
 {
   "api-key": "API KEY",
   "api-secret": "API Secret",
-  "api-passphrase": "API Passcode",
+  "api-passphrase": "API Passphrase",
+  "api-type": "API Type",
   "frequency-type": "seconds",
   "frequency": 5,
   "purchase": [

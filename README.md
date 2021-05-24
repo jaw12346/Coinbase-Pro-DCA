@@ -4,8 +4,7 @@ This is a simple python script to allow for Dollar-Cost-Averaging through the Co
 ## DISCLAIMER:
 This script is available to the public for use in dollar-cost-averaging through the Coinbase Pro API; however, there is absolutely 
 no warantee provided with this code and the developer(s) cannot be found liable for ANY AND ALL use of the code. 
-	USE THIS CODE AT YOUR OWN FINANCIAL RISK.
-	
+	USE THIS CODE AT YOUR OWN FINANCIAL RISK.<br><br>
 This script is under active development and suggestions/edits are GREATLY appreciated and encouraged!
 
 --------------------------------------------------------------------------------------------------
@@ -36,7 +35,10 @@ Note: Configuration file must follow valid JSON standards in order to be read pr
 3) Copy your API Public Key into "api-key".
 4) Copy your API Secret Key into "api-secret".
 5) Copy your API Passphrase into "api-passphrase".
-6) Enter a frequency type: "seconds", "minutes", "hours", "days", "day" (for use with a named day), or "weeks". Frequency type must be in DOUBLE quotes.
+6) Enter "sandbox" or "production" into "api-type".
+   * Sandbox should be used for testing purposes.
+   * Production should be used for **actual** crypto purchases.
+7) Enter a frequency type: "seconds", "minutes", "hours", "days", "day" (for use with a named day), or "weeks". Frequency type must be in DOUBLE quotes.
 	* If the frequency type is "seconds", "minutes", "hours", "days", or "weeks":
 		* Enter an integer value. 
 	* If the frequency type is "day":
@@ -50,4 +52,5 @@ Note: Configuration file must follow valid JSON standards in order to be read pr
 --------------------------------------------------------------------------------------------------
 
 ## Contributing
-Contributions are greatly appreciated for this project! For major changes, please open an issue first to discuss what you would like to change. **DO NOT** push your personal config.json file to the repository as it stores the API information which is sensitive financial information that should **NOT** be shared.
+***Contributions, suggestions, and bug reports are greatly appreciated and encouraged for this project!***<br>
+For major changes, please open an issue first to discuss what you would like to change. **DO NOT** push your config.json file to the repository as it stores the API information which is sensitive financial information that should **NOT** be shared.<br>
