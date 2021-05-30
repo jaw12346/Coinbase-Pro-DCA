@@ -171,7 +171,7 @@ def DCA(public_client, auth_client, raw_orders, writer, file):  # Main driver fu
 if __name__ == '__main__':
     public_client = cbpro.PublicClient()
 
-    with open('config-personal.json') as config_file:
+    with open('config.json') as config_file:
         config = json.load(config_file)
     api_type = config['api-type'].lower()
     key = config['api-key']
