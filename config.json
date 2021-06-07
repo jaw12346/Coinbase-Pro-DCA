@@ -10,5 +10,7 @@
       "trading-pair" : "",
       "amount" :
     }
-  ]
+  ],
+  "auto-deposit": ,
+  "deposit-amount":
 }

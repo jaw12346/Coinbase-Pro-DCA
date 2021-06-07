@@ -1,39 +1,111 @@
+from currency_symbols import CurrencySymbols
+from validation import *
+from generation import *
 import cbpro
 import schedule
 import json
 import csv
+import datetime
 from time import sleep
 from os.path import isfile
 
 
-def generate_accounts(raw_accounts):  # Pull account balances from Coinbase API
-    accounts = dict()
-    print("Balances:\n--------------------")
-    for account in raw_accounts:
-        coin = account['currency']
-        balance = float(account['balance'])
-        if balance > 0:
-            accounts[coin] = balance
-            print(coin, balance)
-    print("--------------------")
-    return accounts
+def deposit_fiat(auth_client, deposit_option, deposit_amount, writer, file):
+    if validate_deposit_request(auth_client, deposit_option, deposit_amount, False):
+        currency = str(deposit_option["currency"])
+        payment_method_id = str(deposit_option["id"])
+        deposit_order = auth_client.deposit(deposit_amount, currency, payment_method_id)  # Deposit
+
+    # Generate deposit currency symbol for log file
+    symbol = CurrencySymbols.get_symbol(currency)
+    deposit_w_symb = symbol + str(deposit_amount)
+
+    # Generate timestamp
+    month = str(datetime.datetime.today().month)
+    day = str(datetime.datetime.today().day)
+    year = str(datetime.datetime.today().year)
+    date = month + "/" + day + "/" + year
+    time = str(datetime.datetime.now().isoformat().split('T')[1]) + 'Z'
+
+    if "message" in deposit_order:  # Deposit error
+        message = deposit_order["message"]
+        to_write = [date, time, currency, deposit_w_symb, deposit_w_symb, message]
+        writer.writerow(to_write)
+        file.flush()
+
+        if message.startswith("Invalid account"):
+            print(f"Coinbase returns: \"{message}\". Chosen deposit account is broken and cannot be used for "
+                  f"DCA.\n\tCRITICAL ERROR... ABORT!")
+            exit(-1)
+        if message.startswith("This amount would exceed"):
+            print(f"Coinbase returns: \"{message}\". Chosen deposit amount exceeds the limit.\n\t"
+                  f"CRITICAL ERROR... ABORT!")
+            exit(-1)
+        else:
+            print(f"Coinbase returns: \"{message}\".\n\tTHIS IS AN UNKNOWN ERROR... ABORT!")
+            exit(-1)
+    else:
+        print("\nDeposit request result: " + str(deposit_order))
+        to_write = [date, time, currency, deposit_w_symb, deposit_w_symb, "True"]
+        writer.writerow(to_write)
+        file.flush()
 
 
-def check_transaction(transaction_id, auth_client):  # Pull the status of an order request from Coinbase API
-    this_order = auth_client.get_order(transaction_id)
-    success = bool(this_order['settled'])
-    return success, this_order
-
-
-def place_order(auth_client, order, writer):  # Orders are passed in individually from DCA and create a market order
+# Orders are passed in individually from DCA and create a market order
+def place_order(auth_client, order, writer, file, deposit_option, deposit_amount):
     coin = order[0]
     amount = order[1]
+    buy_with = coin.split('-')[0]
+    sell_with = coin.split('-')[1]
+    buy_symb = str(CurrencySymbols.get_symbol(buy_with))
+    sell_symb = str(CurrencySymbols.get_symbol(sell_with))
 
     if amount is not None and not 0:
-        response = auth_client.place_market_order(product_id=coin, side='buy', funds=amount)
+        response = auth_client.place_market_order(product_id=coin, side='buy', funds=amount)  # Place market order
         if 'message' in response and response['message'] == 'Insufficient funds':
-            print("INSUFFICIENT FUNDS! Ending loop.")
-            exit(-1)
+            if deposit_option is None or deposit_amount == 0:  # Auto-deposit off
+                print("INSUFFICIENT FUNDS! Ending loop.")
+
+                # Generate timestamp
+                month = str(datetime.datetime.today().month)
+                day = str(datetime.datetime.today().day)
+                year = str(datetime.datetime.today().year)
+                date = month + "/" + day + "/" + year
+                time = str(datetime.datetime.now().isoformat().split('T')[1]) + 'Z'
+
+                # Write critical error message to log
+                to_write = [date, time, coin, "X", "X", response["message"]]
+                writer.writerow(to_write)
+                file.flush()
+                exit(-1)
+            else:  # Auto-deposit on
+                if validate_deposit_request(auth_client, deposit_option, deposit_amount, False):  # Validate deposit request
+                    deposit_fiat(auth_client, deposit_option, deposit_amount, writer, file)
+                    print("Waiting 60 seconds for deposit order response.")
+                    sleep(60)
+                    sell_balance = balance(auth_client, sell_with)
+                    num_hr_wait = 0
+                    while sell_balance < amount:
+                        print(f"Waiting for deposit to finish pending... Hour {num_hr_wait}.")
+                        sleep(3600)  # Wait 1 hr
+                        response = auth_client.place_market_order(product_id=coin, side='buy',
+                                                                  funds=amount)  # Place market order
+                        if "message" in response and "message" == 'Insufficient funds':
+                            success = False
+                            num_hr_wait += 1
+                            continue
+                        else:
+                            transaction_id = response['id']
+                            success, order = check_transaction(transaction_id, auth_client)
+                            if success:
+                                if sell_symb is None: sell_symb = ""
+                                print(f"Deposit of {sell_symb}{deposit_amount} successful! Hour {num_hr_wait+1}\n")
+                                break
+                            num_hr_wait += 1
+                    if success is not True:
+                        response = auth_client.place_market_order(product_id=coin, side='buy',
+                                                                  funds=amount)  # Place market order
+
         sleep(2)
         transaction_id = response['id']
         success, order = check_transaction(transaction_id, auth_client)
@@ -50,7 +122,10 @@ def place_order(auth_client, order, writer):  # Orders are passed in individuall
                 if success:
                     purchase_amount = order['filled-size']
                     print(order)
-                    print(f"Successful purchase of {purchase_amount} {coin} for ${amount} after {attempts + 1} attempts.\n")
+                    if buy_symb is None: buy_symb = ""
+                    if sell_symb is None: sell_symb = ""
+                    print(f"Successful purchase of {buy_symb}{purchase_amount} {coin} for {sell_symb}{amount} after "
+                          f"{attempts + 1} attempts.\n")
                     date_time = str(order['done_at']).split('T')
                     transaction_time = date_time[1]
                     transaction_date = date_time[0]
@@ -69,7 +144,9 @@ def place_order(auth_client, order, writer):  # Orders are passed in individuall
         else:
             print(order)
             purchase_amount = str(order['filled_size'])
-            print(f"Successful purchase of {purchase_amount} {coin} for ${amount}.\n")
+            if buy_symb is None: buy_symb = ""
+            if sell_symb is None: sell_symb = ""
+            print(f"Successful purchase of {buy_symb}{purchase_amount} {coin} for {sell_symb}{amount}.\n")
             date_time = str(order['done_at']).split('T')
             transaction_time = date_time[1]
             transaction_date = date_time[0]
@@ -78,121 +155,37 @@ def place_order(auth_client, order, writer):  # Orders are passed in individuall
             return True
 
 
-def validate_config(key, secret, frequency_type, frequency, api_type):  # Ensure the configuration JSON is formatted correctly
-    if type(key) != str:
-        print("API Key is not a string. Edit the configuration file and ensure api-key is formatted "
-              "correctly.\nEnding loop.")
-        exit(-1)
-
-    if type(secret) != str:
-        print("API Secret is not a string. Edit the configuration file and ensure api-secret is formatted "
-              "correctly.\nEnding loop.")
-        exit(-1)
-
-    valid_types = {"seconds", "minutes", "hours", "days", "day", "weeks"}
-    if type(frequency_type) != str or frequency_type not in valid_types:
-        print(f"Invalid 'frequency-type' {frequency_type}. Please check the example config file for acceptable "
-              f"frequencies.\nEnding loop.")
-        exit(-1)
-
-    valid_days = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"}
-    if frequency not in valid_days and type(frequency) == str and frequency_type == "day":
-        print(f"Invalid day name entered in 'frequency'. Please check the spelling of {frequency}.\nEnding loop.")
-        exit(-1)
-
-    numerical_frequencies = {"seconds", "minutes", "hours", "days", "weeks"}
-    if type(frequency) == str and frequency_type in numerical_frequencies:
-        print(
-            f"'frequency-type' / 'frequency' mismatch. Please ensure numerical-type frequencies {numerical_frequencies}"
-            f"are not in quotations. Please check your spelling and verify types against the example config file."
-            f"\nEnding loop.")
-        exit(-1)
-
-    if api_type != "sandbox" and api_type != "production":
-        print(f"'api-type' {api_type} is invalid. The API type must be 'sandbox' or 'production'.")
-        exit(-1)
-
-
-def validate_order_request(client, requests):  # Ensure the order request is valid based on active markets and limits
-    markets = generate_markets(client)
-    valid_orders = list()
-    for request in requests:
-        trading_pair = request[0]
-        if trading_pair in markets:  # Valid trading pair
-            min_order = markets[trading_pair]['min_market']  # Minimum allowable market-order
-            max_order = markets[trading_pair]['max_market']  # Maximum allowable market-order
-            enabled = not markets[trading_pair][
-                'enabled']  # API returns if trading is disabled. Disabled check -> Enabled check
-            order_size = request[1]
-            if not enabled:
-                print(f"Order of {trading_pair} cannot be processed because Coinbase Pro has disabled market-orders. "
-                      f"This transaction will be ignored!")
-                continue
-            if order_size > max_order:
-                print(f"Order of {trading_pair} cannot be processed because Coinbase Pro's maximum market-order size is"
-                      f" {max_order}. This transaction will be ignored!")
-                continue
-            if order_size < min_order:
-                print(f"Order of {trading_pair} cannot be processed because Coinbase Pro's minimum market-order size is"
-                      f" {min_order}. This transaction will be ignored!")
-                continue
-            valid_orders.append(request)  # Valid order request
-        else:  # Invalid trading-pair
-            print(f"Order of {trading_pair} cannot be processed because it does not match any valid trading-pair on "
-                  f"Coinbase Pro. Please check your spelling and confirm the validity of the provided trading pair on "
-                  f"Coinbase Pro's website. This transaction will be ignored!")
-    return valid_orders
-
-
-def generate_markets(client):  # Pull available markets from Coinbase API
-    markets = client.get_products()
-    valid_pairs = dict()
-    for market in markets:
-        this_market = dict()
-        trading_pair = market['id']
-        min_market = market['min_market_funds']
-        max_market = market['max_market_funds']
-        enabled = market['status'] == 'False' and market['post_only'] == 'False' and market['cancel_only'] == 'False' \
-                  and market['limit_only'] == 'False'  # API returns if trading is DISABLED
-        this_market['min_market'] = float(min_market)
-        this_market['max_market'] = float(max_market)
-        this_market['enabled'] = enabled
-        valid_pairs[trading_pair] = this_market
-    return valid_pairs
-
-
-def DCA(public_client, auth_client, raw_orders, writer, file):  # Main driver function
+# Main driver function
+def DCA(public_client, auth_client, raw_orders, writer, file, deposit_option, deposit_amount):
     valid_orders = validate_order_request(public_client, raw_orders)
     for order in valid_orders:
-        place_order(auth_client, order, writer)
+        place_order(auth_client, order, writer, file, deposit_option, deposit_amount)
         file.flush()
 
 
-if __name__ == '__main__':
+def main():
     public_client = cbpro.PublicClient()
 
-    with open('config-personal.json') as config_file:
+    with open('config.json') as config_file:
         config = json.load(config_file)
-    api_type = config['api-type'].lower()
-    key = config['api-key']
-    secret = config['api-secret']
-    passphrase = config['api-passphrase']
-    frequency = config['frequency']
-    frequency_type = str(config['frequency-type'].lower())
-    if type(frequency) == str:
-        frequency = frequency.lower()
-    raw_orders = config['purchase']
+
+    # Generate variables from configuration file
+    api_type, key, secret, passphrase, frequency, frequency_type, raw_orders, deposit_requested, \
+    deposit_amount = config_reader(config)
+
+    # Validate configuration file variables
     validate_config(key, secret, frequency_type, frequency, api_type)
 
     requested_orders = list()
-    print("Order requests:\n--------------------")
+    print("Order requests:\n---------------")
     for request in raw_orders:
         trading_pair = request['trading-pair'].upper()
         amount = request['amount']
-        print(trading_pair, amount)
+        buy_with_symbol = CurrencySymbols.get_symbol(trading_pair.split('-')[1])
+        print(trading_pair, (buy_with_symbol + str(amount)))
         order = tuple((trading_pair, amount))
         requested_orders.append(order)
-    print("--------------------\n")
+    print("---------------")
 
     log_file_name = "transaction_log.csv"
     if isfile(log_file_name):  # Log file exists
@@ -205,24 +198,35 @@ if __name__ == '__main__':
         writer.writerow(headers)  # Write the column headers
         log_file.flush()
 
-    if api_type == "sandbox":
+    if api_type == "sandbox":  # Sandbox/testing API
         auth_client = cbpro.AuthenticatedClient(key, secret, passphrase,
-                                                api_url="https://api-public.sandbox.pro.coinbase.com")  # Sandbox/testing API
-    elif api_type == "production":
-        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)  # Live-market API
+                                                api_url="https://api-public.sandbox.pro.coinbase.com")
+    elif api_type == "production":  # Live-market API
+        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)
+    else:  # Invalid API option
+        print(f"\nInvalid \"api-type\": {api_type}.\n\tAPI-Type must be \"sandbox\" or \"production\".")
+        exit(-1)
 
     raw_accounts = auth_client.get_accounts()
     accounts = generate_accounts(raw_accounts)
 
-    generic_types = {'seconds', 'minutes', 'hours', 'days', 'weeks'}
+    deposit_option = generate_deposit_option(auth_client)
+    deposit_requested, deposit_amount = validate_deposit_config(deposit_option, deposit_requested, deposit_amount)
+    if deposit_option is None:
+        deposit_requested = False
+        deposit_amount = 0
+
+    generic_types = {'seconds', 'minutes', 'hours', 'days', 'weeks'}  # Doesn't include specified "day"
     if frequency_type in generic_types:
         req = getattr(schedule.every(frequency), frequency_type)
-        req.do(DCA, public_client=public_client, auth_client=auth_client,
-               raw_orders=requested_orders, writer=writer, file=log_file)
+        req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
     elif frequency_type == 'day':
         req = getattr(schedule.every(1), frequency)
-        req.do(DCA, public_client=public_client, auth_client=auth_client,
-               raw_orders=requested_orders, writer=writer, file=log_file)
+        req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
 
     while True:
         schedule.run_pending()
+
+
+if __name__ == "__main__":
+    main()
