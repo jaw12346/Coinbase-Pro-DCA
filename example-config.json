@@ -14,5 +14,7 @@
       "trading-pair" : "BTC-USD",
       "amount" : 20
     }
-  ]
+  ],
+  "auto-deposit": true,
+  "deposit-amount": 10
 }

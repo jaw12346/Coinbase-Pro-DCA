@@ -1,9 +1,9 @@
 # Simple-Coinbase-Pro-DCA
-This is a simple python script to allow for Dollar-Cost-Averaging through the Coinbase Pro market API.
+This is a script to allow for Dollar-Cost-Averaging through the Coinbase Pro market API.
 
 ## DISCLAIMER:
 This script is available to the public for use in dollar-cost-averaging through the Coinbase Pro API; however, there is absolutely 
-no warantee provided with this code and the developer(s) cannot be found liable for ANY AND ALL use of the code. 
+no warantee provided with this code, and the developer(s) cannot be found liable for ANY AND ALL use of the code. 
 	USE THIS CODE AT YOUR OWN FINANCIAL RISK.<br><br>
 This script is under active development and suggestions/edits are GREATLY appreciated and encouraged!
 
@@ -18,6 +18,8 @@ This script is under active development and suggestions/edits are GREATLY apprec
 2) Click "New API Key".
 3) Select your portfolio and name the API key (optional).
 4) Select the permissions you would like to give to the API key: "View", "Transfer", "Trade".
+   * Trade (no auto-deposit): "View" and "Trade" must be enabled.
+   * Trade (with auto-deposit): "View", "Transfer", and "Trade" must be enabled.
 5) Give the API key a secure Passphrase and KEEP A RECORD of this, as it will not be viewable again.
 6) (Optional) Configure IP Whitelisting.
 7) Click "Create API Key" and enter your 2FA (if enabled).
@@ -48,9 +50,21 @@ Note: Configuration file must follow valid JSON standards in order to be read pr
 	* Enter a VALID trading pair from Coinbase Pro in DOUBLE quotes in "trading-pair".
 	* Enter a float-type value into "amount" for purchase amount in the QUOTE currency.
 		* Example: "BTC-USD" quote currency is USD and will purchase BTC. "USD-BTC" quote currency is BTC and will purchase USD.
+9) Auto-deposit functionality:
+	* If you would like the script to automatically deposit fiat money into your Coinbase Pro account when the balance is too low to execute a purchase:
+		* "auto-deposit": true
+		* Enter a numerical value (no currency symbol) to "deposit-amount" to automatically deposit into your account as needed.
+	* If you would **not** like the script to automatically deposit fiat money into your Coinbase Pro account:
+		* "auto-deposit": false
+		* "deposit-amount": 0
+			* Script doesn't require $0 if "auto-deposit" is false, but it will return an error message as a reminder.
 
 --------------------------------------------------------------------------------------------------
 
 ## Contributing
 ***Contributions, suggestions, and bug reports are greatly appreciated and encouraged for this project!***<br>
-For major changes, please open an issue first to discuss what you would like to change. **DO NOT** push your config.json file to the repository as it stores the API information which is sensitive financial information that should **NOT** be shared.<br>
+For major changes, please open an issue first to discuss what you would like to change. **DO NOT** push 
+your config.json file to the repository as it stores the API information which is sensitive financial information 
+that should **NOT** be shared.<br>
+
+If you have experience with the Coinbase Pro API and believe there is simpler language I could use for this documentation, I would appreciate suggestions!
