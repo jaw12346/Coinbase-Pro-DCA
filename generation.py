@@ -24,6 +24,17 @@ def config_reader(config):
 def generate_accounts(raw_accounts):
     """Pull account balances from CBPro API"""
 
+    if "message" in raw_accounts:  # Error has occurred
+        message = raw_accounts["message"]
+        if message == "Invalid API Key":
+            print(f"CBP returns \"{message}.\" This is likely caused by the \"api-type\".\nPlease change the "
+                  f"\"api-type\" in config.json from \"sandbox\" to \"production\" or \"production\" to "
+                  f"\"sandbox\" and ensure you are using the correct API credentials for the \"api-type\" you intend to "
+                  f"use.")
+            exit(-1)
+        else:  # Unknown API error
+            raise Exception(f"Unknown CBP API error: \"{message}.\"")
+
     accounts = dict()
     for account in raw_accounts:
         coin = account["currency"]
@@ -43,9 +54,11 @@ def generate_deposit_option(auth_client):
         if message == "Invalid API Key":
             raise Exception("Coinbase has detected an invalid API key. Please check the \"api-key\" tag in the "
                             "configuration file.")
-        else:
+        else:  # Unknown error
             raise Exception(f"Coinbase returns: \"{message}\".\n\tTHIS IS AN UNKNOWN ERROR.\n\tPlease open an issue on "
                             f"the GitHub repository with this error message.")
+
+    raw_options = [option for option in raw_options if option["type"] != "fiat_account"]  # Remove fiat CB wallets
 
     print("\nAuto-deposit payment options:\n-----------------------------")
     options = list()

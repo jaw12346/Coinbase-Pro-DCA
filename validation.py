@@ -42,7 +42,7 @@ def validate_deposit_config(deposit_option, deposit_requested, deposit_amount):
     print(f"\nAuto-deposit requested: {deposit_requested}\n")
 
     if deposit_requested:
-        deposit_limits = deposit_option["limits"]["deposit"][0]  #TODO: Returns error on 'deposit' when requesting USD Wallet
+        deposit_limits = deposit_option["limits"]["deposit"][0]
         deposit_period = deposit_limits["period_in_days"]
         max_per_period = float(deposit_limits["total"]["amount"])
         deposit_currency = deposit_limits["total"]["currency"]
@@ -93,6 +93,7 @@ def validate_deposit_request(auth_client, deposit_option, deposit_amount, loopin
         sleep(SECONDS_PER_HOUR)  # Wait 1 hour
         validate_deposit_request(auth_client, deposit_amount, looping)
     if deposit_amount > remaining and looping:
+        looping = True
         sleep(SECONDS_PER_HOUR)  # Wait 1 hour
         validate_deposit_request(auth_client, deposit_amount, looping)
 

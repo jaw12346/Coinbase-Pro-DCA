@@ -211,7 +211,9 @@ def main():
     raw_accounts = auth_client.get_accounts()
     accounts = generate_accounts(raw_accounts)
 
-    deposit_option = generate_deposit_option(auth_client)
+    deposit_option = None
+    if deposit_requested:
+        deposit_option = generate_deposit_option(auth_client)
     deposit_requested, deposit_amount = validate_deposit_config(deposit_option, deposit_requested, deposit_amount)
     if deposit_option is None:
         deposit_requested = False
