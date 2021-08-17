@@ -2,3 +2,4 @@ cbpro==1.1.4
 schedule==1.1.0
 datetime==4.3
 currency-symbols==2.0.0
+pyqt5==5.15.4
