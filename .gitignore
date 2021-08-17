@@ -1,5 +1,2 @@
-.idea
-__pycache__
+
 config.json
-config-personal.json
-transaction_log.csv
