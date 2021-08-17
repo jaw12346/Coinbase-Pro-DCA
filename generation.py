@@ -18,7 +18,8 @@ def config_reader(config):
     deposit_requested = config["auto-deposit"]
     deposit_amount = config["deposit-amount"]
 
-    return api_type, key, secret, passphrase, frequency, frequency_type, raw_orders, deposit_requested, deposit_amount
+    return api_type, key, secret, passphrase, frequency, frequency_type, \
+        raw_orders, deposit_requested, deposit_amount
 
 
 def generate_accounts(raw_accounts):
