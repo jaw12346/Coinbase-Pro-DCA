@@ -32,16 +32,21 @@ class Ui_dca_list_dialog(object):
         self.edit_dca_button = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.edit_dca_button.setObjectName("edit_dca_button")
         self.dca_buttons_layout.addWidget(self.edit_dca_button)
+
+        self.edit_dca_button.clicked.connect(self.edit_dca_item)  # Call for edit of selected entry
+
         self.remove_dca_button = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.remove_dca_button.setObjectName("remove_dca_button")
         self.dca_buttons_layout.addWidget(self.remove_dca_button)
+
+        self.remove_dca_button.clicked.connect(self.remove_dca_item)  # Call for removal of selected entry
+
         self.save_list_button = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.save_list_button.setDefault(True)
         self.save_list_button.setObjectName("save_list_button")
         self.dca_buttons_layout.addWidget(self.save_list_button)
 
         self.retranslateUi(dca_list_dialog)
-        self.remove_dca_button.clicked.connect(self.remove_dca_item)  # Call for removal of selected entry
         QtCore.QMetaObject.connectSlotsByName(dca_list_dialog)
 
     def retranslateUi(self, dca_list_dialog):
@@ -57,9 +62,9 @@ class Ui_dca_list_dialog(object):
         self.dialog_window = QtWidgets.QDialog()
         self.dialog_ui = Ui_add_dca_dialog()
         self.dialog_ui.setupUi(self.dialog_window, parent=self)  # `parent` declares the list window as parent
-        self.dialog_window.setFocus()  # Force placeholder text to appear
         self.dialog_window.setModal(True)  # Force the dialog to be the only interactable window
         self.dialog_window.setWindowFlags(QtCore.Qt.CustomizeWindowHint)  # Remove the title bar
+        self.dialog_window.setFocus()  # Force placeholder text to appear
         self.dialog_window.show()
 
     def add_new_dca(self, base_currency, quote_currency, amount):
@@ -85,12 +90,30 @@ class Ui_dca_list_dialog(object):
         for item in self.dca_list.selectedItems():
             self.dca_list.takeItem(self.dca_list.row(item))
 
+    def edit_dca_item(self):
+        item = self.dca_list.currentItem()
+        if item is None:
+            return
+        text = item.text()
+        amount = float((text.split(' ')[0]).split('$')[1])
+        quote_currency = text.split(' ')[1]
+        base_currency = text.split(' ')[-1]
+        self.open_edit_window(amount, quote_currency, base_currency)
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    dca_list_dialog = QtWidgets.QDialog()
-    ui = Ui_dca_list_dialog()
-    ui.setupUi(dca_list_dialog)
-    dca_list_dialog.show()
-    sys.exit(app.exec_())
+    def open_edit_window(self, amount, quote_currency, base_currency):
+        from add_dca_gui import Ui_add_dca_dialog  # Prevents circular import for adding to dca list
+        self.dialog_window = QtWidgets.QDialog()
+        self.dialog_ui = Ui_add_dca_dialog()
+        self.dialog_ui.setupUi(self.dialog_window, parent=self)  # `parent` declares the list window as parent
+        self.dialog_window.setModal(True)  # Force the dialog to be the only interactable window
+        self.dialog_window.setWindowFlags(QtCore.Qt.CustomizeWindowHint)  # Remove the title bar
+
+        # Fill in fields with previous data to be edited
+        self.dialog_ui.base_currency_input.insert(base_currency)
+        self.dialog_ui.quote_currency_input.insert(quote_currency)
+        self.dialog_ui.quote_amount_input.setValue(amount)
+
+        self.dialog_window.setFocus()  # Force placeholder text to appear
+        self.dialog_window.show()
+
+        self.dialog_ui.confirm_add_button.clicked.connect(self.remove_dca_item)  # Remove old instance upon saving

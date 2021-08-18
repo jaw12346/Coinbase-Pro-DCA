@@ -49,7 +49,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(5)
         self.api_secret_input.setFont(font)
-        self.api_secret_input.setInputMethodHints(QtCore.Qt.ImhHiddenText|QtCore.Qt.ImhNoPredictiveText)
+        self.api_secret_input.setInputMethodHints(QtCore.Qt.ImhHiddenText | QtCore.Qt.ImhNoPredictiveText)
         self.api_secret_input.setText("")
         self.api_secret_input.setObjectName("api_secret_input")
         self.api_input_layout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.api_secret_input)
@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(5)
         self.api_passphrase_input.setFont(font)
-        self.api_passphrase_input.setInputMethodHints(QtCore.Qt.ImhHiddenText|QtCore.Qt.ImhNoPredictiveText)
+        self.api_passphrase_input.setInputMethodHints(QtCore.Qt.ImhHiddenText | QtCore.Qt.ImhNoPredictiveText)
         self.api_passphrase_input.setObjectName("api_passphrase_input")
         self.api_input_layout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.api_passphrase_input)
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.api_type_label.setFont(font)
-        self.api_type_label.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.api_type_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.api_type_label.setObjectName("api_type_label")
         self.api_type_layout.addWidget(self.api_type_label)
         self.market_type_layout = QtWidgets.QHBoxLayout()
@@ -157,14 +157,3 @@ class Ui_MainWindow(object):
         self.list_window.setModal(True)  # Force the dialog to be the only interactable window
         self.list_window.setWindowFlags(QtCore.Qt.CustomizeWindowHint)  # Remove the title bar
         self.list_window.show()
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.setFocus()  # Forces placeholder text to appear
-    MainWindow.show()
-    sys.exit(app.exec_())

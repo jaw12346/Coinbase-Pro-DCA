@@ -50,6 +50,7 @@ class Ui_add_dca_dialog(QtWidgets.QDialog):
         self.quote_currency_input.setAlignment(QtCore.Qt.AlignCenter)
         self.quote_currency_input.setObjectName("quote_currency_input")
         self.add_dca_layout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.quote_currency_input)
+
         self.quote_amount_label = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -126,13 +127,3 @@ class Ui_add_dca_dialog(QtWidgets.QDialog):
         self.quote_currency = quote_currency
         self.amount = amount
         self.parent.add_new_dca(base_currency, quote_currency, amount)
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    add_dca_dialog = QtWidgets.QDialog()
-    ui = Ui_add_dca_dialog()
-    ui.setupUi(add_dca_dialog)
-    add_dca_dialog.show()
-    sys.exit(app.exec_())
