@@ -9,6 +9,7 @@ import datetime
 from time import sleep
 from os.path import isfile
 import sys
+from os import environ
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from setup_gui import Ui_MainWindow
@@ -179,7 +180,7 @@ def start_pressed(main_window, main_ui):
 
 
 def main():
-
+    environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QtWidgets.QApplication(sys.argv)
     main_window = QtWidgets.QMainWindow()
     main_ui = Ui_MainWindow()
