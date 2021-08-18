@@ -1,5 +1,5 @@
-# Simple-Coinbase-Pro-DCA
-This is a simple python script to allow for Dollar-Cost-Averaging through the Coinbase Pro market API.
+# Coinbase-Pro-DCA
+This is a python script to allow for Dollar-Cost-Averaging through the Coinbase Pro market API. It's currently in active development, so please only use the Main branch.
 
 ## DISCLAIMER:
 This script is available to the public for use in dollar-cost-averaging through the Coinbase Pro API; however, there is absolutely 
