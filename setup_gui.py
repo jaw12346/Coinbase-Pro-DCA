@@ -119,8 +119,6 @@ class Ui_MainWindow(object):
         self.edit_configuration_button.setObjectName("edit_configuration_button")
         self.gridLayout.addWidget(self.edit_configuration_button, 0, 0, 1, 1)
 
-        # self.edit_configuration_button.clicked.connect(self.open_list_window)
-
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem, 0, 2, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
@@ -157,6 +155,7 @@ class Ui_MainWindow(object):
         self.list_ui = Ui_dca_list_dialog()
         self.list_ui.setupUi(self.list_window, parent=self)
         self.list_window.setModal(True)  # Force the dialog to be the only interactable window
+        self.list_window.setWindowFlags(QtCore.Qt.CustomizeWindowHint)  # Remove the title bar
         self.list_window.show()
 
 
@@ -168,8 +167,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.setFocus()  # Forces placeholder text to appear
     MainWindow.show()
-
-
-
     sys.exit(app.exec_())
-

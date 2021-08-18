@@ -15,6 +15,8 @@ from setup_gui import Ui_MainWindow
 from edit_dca_list_gui import Ui_dca_list_dialog
 from add_dca_gui import Ui_add_dca_dialog
 
+PUBLIC_CLIENT = cbpro.PublicClient()
+
 SANDBOX_URL = "https://api-public.sandbox.pro.coinbase.com"
 SECONDS_PER_MINUTE = 60
 SECONDS_PER_HOUR = 3600
@@ -172,28 +174,11 @@ def DCA(public_client, auth_client, raw_orders, writer, file, deposit_option, de
         file.flush()
 
 
-def open_list_window(ui):
-    ui.open_list_window()
-    # list_window = QtWidgets.QWidget()
-    # list_ui = Ui_dca_list_dialog()
-    # list_ui.setupUi(list_window)
-    # list_window.show()
-
-
-def add_dca_pressed(base_currency, quote_currency, amount):
-    # base_currency = str(dialog.base_currency_input.text()).upper()
-    # quote_currency = str(dialog.base_currency_input.text()).upper()
-    # amount = int(dialog.quote_amount_input.value())
-    print(base_currency, quote_currency, amount)
-
-
 def start_pressed(main_window, main_ui):
     main_window.hide()
 
 
-
 def main():
-    public_client = cbpro.PublicClient()
 
     app = QtWidgets.QApplication(sys.argv)
     main_window = QtWidgets.QMainWindow()
@@ -202,7 +187,7 @@ def main():
     main_window.setFocus()  # Forces placeholder text to appear
     main_window.show()
 
-    main_ui.edit_configuration_button.clicked.connect(lambda: open_list_window(main_ui))
+    main_ui.edit_configuration_button.clicked.connect(main_ui.open_list_window)
     main_ui.start_button.clicked.connect(lambda: start_pressed(main_window, main_ui))
 
 

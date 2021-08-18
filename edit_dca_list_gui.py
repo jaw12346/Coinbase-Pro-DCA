@@ -5,10 +5,12 @@
 # Created by: PyQt5 UI code generator 5.9.2
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import validation
 
 
 class Ui_dca_list_dialog(object):
-    def setupUi(self, dca_list_dialog, parent):
+    def setupUi(self, dca_list_dialog, parent=None):
+        self.parent = parent  # `parent` of list editor is API setup window
         dca_list_dialog.setObjectName("dca_list_dialog")
         dca_list_dialog.resize(320, 240)
         self.dca_list = QtWidgets.QListWidget(dca_list_dialog)
@@ -57,11 +59,27 @@ class Ui_dca_list_dialog(object):
         self.dialog_ui.setupUi(self.dialog_window, parent=self)  # `parent` declares the list window as parent
         self.dialog_window.setFocus()  # Force placeholder text to appear
         self.dialog_window.setModal(True)  # Force the dialog to be the only interactable window
+        self.dialog_window.setWindowFlags(QtCore.Qt.CustomizeWindowHint)  # Remove the title bar
         self.dialog_window.show()
 
     def add_new_dca(self, base_currency, quote_currency, amount):
-        value = f"${amount}:  {quote_currency} -> {base_currency}"
-        self.dca_list.addItem(value)
+        value = f"${amount} {quote_currency} -> {base_currency}"
+        response = validation.validate_new_dca(base_currency, quote_currency, amount)
+        if response[0] == 1 and response[1] == 1:
+            self.dca_list.addItem(value)
+            self.dialog_window.close()
+        else:
+            self.fail_dca(response)
+
+    def fail_dca(self, failed):
+        if failed[1] == 0:
+            self.dialog_ui.quote_amount_input.setStyleSheet("QSpinBox { border: 1px solid red;}")
+            if failed[0] == 1:
+                self.dialog_ui.base_currency_input.setStyleSheet("QLineEdit { border: 1px solid green;}")
+                self.dialog_ui.quote_currency_input.setStyleSheet("QLineEdit { border: 1px solid green;}")
+        if failed[0] == 0:
+            self.dialog_ui.base_currency_input.setStyleSheet("QLineEdit { border: 1px solid red;}")
+            self.dialog_ui.quote_currency_input.setStyleSheet("QLineEdit { border: 1px solid red;}")
 
     def remove_dca_item(self):
         for item in self.dca_list.selectedItems():
@@ -76,4 +94,3 @@ if __name__ == "__main__":
     ui.setupUi(dca_list_dialog)
     dca_list_dialog.show()
     sys.exit(app.exec_())
-

@@ -5,11 +5,10 @@
 # Created by: PyQt5 UI code generator 5.9.2
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import main
 
 
 class Ui_add_dca_dialog(QtWidgets.QDialog):
-    def setupUi(self, add_dca_dialog, parent):
+    def setupUi(self, add_dca_dialog, parent=None):
         self.parent = parent  # Parent of dialog = list dialog
 
         add_dca_dialog.setObjectName("add_dca_dialog")
@@ -57,11 +56,12 @@ class Ui_add_dca_dialog(QtWidgets.QDialog):
         self.quote_amount_label.setFont(font)
         self.quote_amount_label.setObjectName("quote_amount_label")
         self.add_dca_layout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.quote_amount_label)
+
         self.quote_amount_input = QtWidgets.QSpinBox(self.formLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(9)
         self.quote_amount_input.setFont(font)
-        self.quote_amount_input.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly|QtCore.Qt.ImhNoPredictiveText)
+        self.quote_amount_input.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly | QtCore.Qt.ImhNoPredictiveText)
         self.quote_amount_input.setAlignment(QtCore.Qt.AlignCenter)
         self.quote_amount_input.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.quote_amount_input.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectToNearestValue)
@@ -72,6 +72,7 @@ class Ui_add_dca_dialog(QtWidgets.QDialog):
         self.quote_amount_input.setProperty("value", 5)
         self.quote_amount_input.setObjectName("quote_amount_input")
         self.add_dca_layout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.quote_amount_input)
+
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
 
@@ -125,8 +126,6 @@ class Ui_add_dca_dialog(QtWidgets.QDialog):
         self.quote_currency = quote_currency
         self.amount = amount
         self.parent.add_new_dca(base_currency, quote_currency, amount)
-        # TODO: use api to see if the trading pair is valid -> empty fields, highlight borders red
-        # TODO: close window once validated
 
 
 if __name__ == "__main__":
@@ -137,4 +136,3 @@ if __name__ == "__main__":
     ui.setupUi(add_dca_dialog)
     add_dca_dialog.show()
     sys.exit(app.exec_())
-

@@ -130,6 +130,21 @@ def validate_order_request(client, requests):
     return valid_orders
 
 
+def validate_new_dca(base_currency, quote_currency, amount):  # GUI function
+    currency_pair = str(base_currency + "-" + quote_currency).upper()
+    all_products = PUBLIC_CLIENT.get_products()
+    response = [0, 0]  # Currency pair invalid, amount invalid
+    for pair in all_products:  # Check validity of input
+        if currency_pair == pair['id']:
+            response[0] = 1
+            if amount >= float(pair['min_market_funds']):
+                response[1] = 1
+            elif amount < float(pair['min_market_funds']) or amount > float(pair['max_market_funds']):
+                response[1] = 0
+            break
+    return response
+
+
 def check_transaction(transaction_id, auth_client):
     """Pull the status of an order request from CBPro API"""
 
