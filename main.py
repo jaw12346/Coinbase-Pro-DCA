@@ -8,6 +8,12 @@ import csv
 import datetime
 from time import sleep
 from os.path import isfile
+import sys
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from setup_gui import Ui_MainWindow
+from edit_dca_list_gui import Ui_dca_list_dialog
+from add_dca_gui import Ui_add_dca_dialog
 
 SANDBOX_URL = "https://api-public.sandbox.pro.coinbase.com"
 SECONDS_PER_MINUTE = 60
@@ -166,69 +172,104 @@ def DCA(public_client, auth_client, raw_orders, writer, file, deposit_option, de
         file.flush()
 
 
+def open_list_window(ui):
+    ui.open_list_window()
+    # list_window = QtWidgets.QWidget()
+    # list_ui = Ui_dca_list_dialog()
+    # list_ui.setupUi(list_window)
+    # list_window.show()
+
+
+def add_dca_pressed(base_currency, quote_currency, amount):
+    # base_currency = str(dialog.base_currency_input.text()).upper()
+    # quote_currency = str(dialog.base_currency_input.text()).upper()
+    # amount = int(dialog.quote_amount_input.value())
+    print(base_currency, quote_currency, amount)
+
+
+def start_pressed(main_window, main_ui):
+    main_window.hide()
+
+
+
 def main():
     public_client = cbpro.PublicClient()
 
-    with open("config.json") as config_file:
-        config = json.load(config_file)
+    app = QtWidgets.QApplication(sys.argv)
+    main_window = QtWidgets.QMainWindow()
+    main_ui = Ui_MainWindow()
+    main_ui.setupUi(main_window)
+    main_window.setFocus()  # Forces placeholder text to appear
+    main_window.show()
 
-    # Generate variables from configuration file
-    api_type, key, secret, passphrase, frequency, frequency_type, raw_orders, deposit_requested, \
-        deposit_amount = config_reader(config)
+    main_ui.edit_configuration_button.clicked.connect(lambda: open_list_window(main_ui))
+    main_ui.start_button.clicked.connect(lambda: start_pressed(main_window, main_ui))
 
-    # Validate configuration file variables
-    validate_config(key, secret, frequency_type, frequency, api_type)
 
-    requested_orders = list()
-    print("Order requests:\n---------------")
-    for request in raw_orders:
-        trading_pair = request["trading-pair"].upper()
-        amount = request["amount"]
-        buy_with_symbol = CurrencySymbols.get_symbol(trading_pair.split("-")[1])
-        print(trading_pair, (buy_with_symbol + str(amount)))
-        order = tuple((trading_pair, amount))
-        requested_orders.append(order)
-    print("---------------")
 
-    log_file_name = "transaction_log.csv"
-    if isfile(log_file_name):  # Log file exists
-        log_file = open(log_file_name, "a", newline="")
-        writer = csv.writer(log_file)
-    else:  # Create the log file
-        log_file = open(log_file_name, "x", newline="")
-        headers = ["Date", "UTC Time", "Trading Pair", "Purchased", "Cost", "Successful"]
-        writer = csv.writer(log_file)
-        writer.writerow(headers)  # Write the column headers
-        log_file.flush()
+    sys.exit(app.exec_())  # Keeps the window on screen until it's closed
 
-    if api_type == "sandbox":  # Sandbox/testing API
-        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase, SANDBOX_URL)
-    elif api_type == "production":  # Live-market API
-        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)
-    else:  # Invalid API option
-        raise ValueError(f"\nInvalid \"api-type\": {api_type}.\n\tAPI-Type must be \"sandbox\" or \"production\".")
-
-    raw_accounts = auth_client.get_accounts()
-    accounts = generate_accounts(raw_accounts)
-
-    deposit_option = None
-    if deposit_requested:
-        deposit_option = generate_deposit_option(auth_client)
-    deposit_requested, deposit_amount = validate_deposit_config(deposit_option, deposit_requested, deposit_amount)
-    if deposit_option is None:
-        deposit_requested = False
-        deposit_amount = 0
-
-    generic_types = {"seconds", "minutes", "hours", "days", "weeks"}  # Doesn't include specified "day"
-    if frequency_type in generic_types:
-        req = getattr(schedule.every(frequency), frequency_type)
-        req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
-    elif frequency_type == "day":
-        req = getattr(schedule.every(1), frequency)
-        req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
-
-    while True:
-        schedule.run_pending()
+# -------------------------------------------------------------------------------------------------------------------
+    # with open("config.json") as config_file:
+    #     config = json.load(config_file)
+    #
+    # # Generate variables from configuration file
+    # api_type, key, secret, passphrase, frequency, frequency_type, raw_orders, deposit_requested, \
+    #     deposit_amount = config_reader(config)
+    #
+    # # Validate configuration file variables
+    # validate_config(key, secret, frequency_type, frequency, api_type)
+    #
+    # requested_orders = list()
+    # print("Order requests:\n---------------")
+    # for request in raw_orders:
+    #     trading_pair = request["trading-pair"].upper()
+    #     amount = request["amount"]
+    #     buy_with_symbol = CurrencySymbols.get_symbol(trading_pair.split("-")[1])
+    #     print(trading_pair, (buy_with_symbol + str(amount)))
+    #     order = tuple((trading_pair, amount))
+    #     requested_orders.append(order)
+    # print("---------------")
+    #
+    # log_file_name = "transaction_log.csv"
+    # if isfile(log_file_name):  # Log file exists
+    #     log_file = open(log_file_name, "a", newline="")
+    #     writer = csv.writer(log_file)
+    # else:  # Create the log file
+    #     log_file = open(log_file_name, "x", newline="")
+    #     headers = ["Date", "UTC Time", "Trading Pair", "Purchased", "Cost", "Successful"]
+    #     writer = csv.writer(log_file)
+    #     writer.writerow(headers)  # Write the column headers
+    #     log_file.flush()
+    #
+    # if api_type == "sandbox":  # Sandbox/testing API
+    #     auth_client = cbpro.AuthenticatedClient(key, secret, passphrase, SANDBOX_URL)
+    # elif api_type == "production":  # Live-market API
+    #     auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)
+    # else:  # Invalid API option
+    #     raise ValueError(f"\nInvalid \"api-type\": {api_type}.\n\tAPI-Type must be \"sandbox\" or \"production\".")
+    #
+    # raw_accounts = auth_client.get_accounts()
+    # accounts = generate_accounts(raw_accounts)
+    #
+    # deposit_option = None
+    # if deposit_requested:
+    #     deposit_option = generate_deposit_option(auth_client)
+    # deposit_requested, deposit_amount = validate_deposit_config(deposit_option, deposit_requested, deposit_amount)
+    # if deposit_option is None:
+    #     deposit_requested = False
+    #     deposit_amount = 0
+    #
+    # generic_types = {"seconds", "minutes", "hours", "days", "weeks"}  # Doesn't include specified "day"
+    # if frequency_type in generic_types:
+    #     req = getattr(schedule.every(frequency), frequency_type)
+    #     req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
+    # elif frequency_type == "day":
+    #     req = getattr(schedule.every(1), frequency)
+    #     req.do(DCA, public_client, auth_client, requested_orders, writer, log_file, deposit_option, deposit_amount)
+    #
+    # while True:
+    #     schedule.run_pending()
 
 
 if __name__ == "__main__":

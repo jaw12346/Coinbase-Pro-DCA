@@ -3,10 +3,10 @@
 # Form implementation generated from reading ui file 'setup.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
-#
-# WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from edit_dca_list_gui import Ui_dca_list_dialog
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -114,9 +114,13 @@ class Ui_MainWindow(object):
         self.start_button.setDefault(True)
         self.start_button.setObjectName("start_button")
         self.gridLayout.addWidget(self.start_button, 0, 3, 1, 1)
+
         self.edit_configuration_button = QtWidgets.QPushButton(self.verticalLayoutWidget_2)
         self.edit_configuration_button.setObjectName("edit_configuration_button")
         self.gridLayout.addWidget(self.edit_configuration_button, 0, 0, 1, 1)
+
+        # self.edit_configuration_button.clicked.connect(self.open_list_window)
+
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem, 0, 2, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
@@ -139,13 +143,21 @@ class Ui_MainWindow(object):
         self.api_secret_label.setText(_translate("MainWindow", "API Secret:"))
         self.api_secret_input.setPlaceholderText(_translate("MainWindow", "Enter API secret from Coinbase Pro"))
         self.api_passphrase_label.setText(_translate("MainWindow", "API Passphrase:"))
-        self.api_passphrase_input.setPlaceholderText(_translate("MainWindow", "Enter custom API passphrase from Coinbase Pro"))
+        self.api_passphrase_input.setPlaceholderText(_translate("MainWindow",
+                                                                "Enter custom API passphrase from Coinbase Pro"))
         self.api_type_label.setText(_translate("MainWindow", "API Type"))
         self.market_button.setText(_translate("MainWindow", "Real Market"))
         self.sandbox_button.setText(_translate("MainWindow", "Sandbox Market"))
         self.title_label.setText(_translate("MainWindow", "Coinbase Pro Dollar-Cost-Averaging"))
         self.start_button.setText(_translate("MainWindow", "Start"))
         self.edit_configuration_button.setText(_translate("MainWindow", "Edit DCA Purchase List"))
+
+    def open_list_window(self):  # Open list widget from edit_dca_list_gui.py
+        self.list_window = QtWidgets.QDialog()
+        self.list_ui = Ui_dca_list_dialog()
+        self.list_ui.setupUi(self.list_window, parent=self)
+        self.list_window.setModal(True)  # Force the dialog to be the only interactable window
+        self.list_window.show()
 
 
 if __name__ == "__main__":
@@ -154,6 +166,10 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
+    MainWindow.setFocus()  # Forces placeholder text to appear
     MainWindow.show()
+
+
+
     sys.exit(app.exec_())
 

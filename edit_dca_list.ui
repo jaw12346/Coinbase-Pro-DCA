@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>purchase_list_widget</class>
- <widget class="QWidget" name="purchase_list_widget">
+ <class>dca_list_dialog</class>
+ <widget class="QDialog" name="dca_list_dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,8 +11,21 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit DCA Purchase List</string>
+   <string>DCA List Editor</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QListWidget" name="dca_list">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>211</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
@@ -22,14 +35,11 @@
      <height>191</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="dca_edit_buttons_layout">
+   <layout class="QVBoxLayout" name="dca_buttons_layout">
     <item>
      <widget class="QPushButton" name="add_dca_button">
       <property name="text">
        <string>Add</string>
-      </property>
-      <property name="default">
-       <bool>false</bool>
       </property>
      </widget>
     </item>
@@ -49,12 +59,6 @@
     </item>
     <item>
      <widget class="QPushButton" name="save_list_button">
-      <property name="font">
-       <font>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
       <property name="text">
        <string>Save and Exit</string>
       </property>
@@ -65,34 +69,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QListView" name="dca_list">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>20</y>
-     <width>211</width>
-     <height>192</height>
-    </rect>
-   </property>
-  </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>remove_dca_button</sender>
-   <signal>clicked()</signal>
-   <receiver>dca_list</receiver>
-   <slot>clearSelection()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>244</x>
-     <y>129</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>34</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
