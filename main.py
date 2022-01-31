@@ -168,7 +168,7 @@ def DCA(public_client, auth_client, raw_orders, writer, file):  # Main driver fu
         file.flush()
 
 
-if __name__ == '__main__':
+def main():
     public_client = cbpro.PublicClient()
 
     with open('config.json') as config_file:
@@ -226,3 +226,8 @@ if __name__ == '__main__':
 
     while True:
         schedule.run_pending()
+        sleep(1)  # Prevents 100% cpu utilization
+
+
+if __name__ == '__main__':
+    main()
